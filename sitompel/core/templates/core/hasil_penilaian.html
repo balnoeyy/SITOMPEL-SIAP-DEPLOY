@@ -1,0 +1,121 @@
+{% extends 'core/main.html' %}
+
+{% block title %}Rekap Nilai - SITOMPEL{% endblock %}
+{% block header_title %}Rekapitulasi Nilai Kelas{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-end mb-8">
+    <div>
+        <h2 class="text-2xl font-black text-[#1A202C]">{{ sesi.nama_ujian }}</h2>
+        <p class="text-gray-500 font-medium">{{ sesi.kelas.mata_kuliah.nama_mk }} - Kelas {{ sesi.kelas.nama_kelas }}</p>
+    </div>
+    <div class="flex space-x-3">
+        <a href="{% url 'pengajar_dashboard' %}" class="bg-white border border-gray-200 text-gray-600 font-bold py-2.5 px-5 rounded-xl shadow-sm hover:bg-gray-50 transition">Kembali</a>
+        <a href="{% url 'ekspor_nilai_excel' sesi.id %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center">
+            <i class="fa-solid fa-file-excel mr-2"></i> Unduh Excel
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="bg-gray-50/80 px-8 py-4 flex text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+        <div class="w-1/3">Mahasiswa / NIM</div>
+        <div class="w-1/3 text-center">Status Pemindaian</div>
+        <div class="w-1/3 text-right">Skor Total</div>
+    </div>
+
+    <div class="divide-y divide-gray-100">
+        {% for doc in dokumen_terkumpul %}
+            
+            <div onclick="toggleAccordion('detail-{{ doc.id }}')" class="px-8 py-5 flex items-center cursor-pointer hover:bg-blue-50/30 transition group">
+                <div class="w-1/3">
+                    <p class="font-bold text-gray-900 group-hover:text-blue-600 transition">{{ doc.pelajar.nama_pelajar }}</p>
+                    <p class="text-xs text-gray-500 font-mono">{{ doc.pelajar.nim }}</p>
+                </div>
+                <div class="w-1/3 text-center">
+                    <span class="bg-green-100 text-green-800 text-[10px] font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i> Terbaca</span>
+                </div>
+                <div class="w-1/3 text-right flex items-center justify-end space-x-4">
+                    <span class="text-xl font-black text-[#1A202C]">
+                        <i class="fa-solid fa-calculator text-gray-300 text-sm mr-2"></i>
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-gray-400 transform transition-transform duration-200" id="icon-{{ doc.id }}"></i>
+                </div>
+            </div>
+
+            <div id="detail-{{ doc.id }}" class="hidden bg-gray-50 border-t border-b border-gray-100">
+                <form method="POST" class="p-8">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-8">
+                        {% for jawaban in doc.jawaban_detail.all %}
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                            <div class="mb-4">
+                                <span class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-lg text-xs mb-2 inline-block">Soal {{ jawaban.soal.nomor_soal }} (Bobot: {{ jawaban.soal.bobot_maksimal }})</span>
+                                <p class="text-sm font-semibold text-gray-800">{{ jawaban.soal.pertanyaan }}</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="space-y-4">
+                                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Teks Jawaban Mahasiswa</p>
+                                        <p class="text-sm text-gray-700 italic font-medium leading-relaxed">"{{ jawaban.teks_ocr_final }}"</p>
+                                    </div>
+                                    
+                                    <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl">
+                                        <p class="text-[10px] font-bold text-indigo-400 uppercase mb-2 flex items-center"><i class="fa-solid fa-robot mr-1"></i> Evaluasi Semantik</p>
+                                        <p class="text-xs text-indigo-900 font-medium">{{ jawaban.catatan_rag|default:"Sistem tidak menghasilkan catatan." }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-5 rounded-xl border border-gray-200 flex flex-col justify-center">
+                                    <div class="flex justify-between items-center mb-6">
+                                        <span class="text-sm font-bold text-gray-500">Nilai AI SBERT:</span>
+                                        <span class="text-2xl font-black text-gray-900">{{ jawaban.skor_ai }}</span>
+                                    </div>
+
+                                    <div class="space-y-4 pt-4 border-t border-gray-100">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Penyesuaian Nilai (Opsional)</label>
+                                            <input type="number" step="0.1" max="{{ jawaban.soal.bobot_maksimal }}" name="skor_akhir_{{ jawaban.id }}" value="{{ jawaban.skor_akhir|default:jawaban.skor_ai }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-blue-400 font-bold">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Catatan Pengajar</label>
+                                            <input type="text" name="catatan_{{ jawaban.id }}" value="{{ jawaban.catatan_pengajar|default:'' }}" placeholder="Tulis alasan jika nilai diubah..." class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 text-xs focus:ring-2 focus:ring-blue-400">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-6 flex justify-end">
+                        <button type="submit" class="bg-[#111c2a] hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center">
+                            <i class="fa-solid fa-save mr-2"></i> Simpan Penyesuaian Nilai
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        {% empty %}
+            <div class="px-8 py-10 text-center text-gray-400 italic font-medium">Belum ada lembar ujian yang dipindai.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleAccordion(panelId) {
+        const panel = document.getElementById(panelId);
+        const icon = document.getElementById('icon-' + panelId.replace('detail-', ''));
+        
+        if (panel.classList.contains('hidden')) {
+            panel.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        } else {
+            panel.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+</script>
+{% endblock %}

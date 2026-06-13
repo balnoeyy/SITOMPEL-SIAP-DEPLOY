@@ -1,0 +1,45 @@
+{% extends 'core/main.html' %}
+{% block title %}Arsip Riwayat - SITOMPEL{% endblock %}
+{% block header_title %}Arsip & Riwayat Penilaian{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-100 bg-gray-50">
+        <h3 class="font-bold text-gray-800 text-lg">Riwayat Sesi Ujian</h3>
+        <p class="text-sm text-gray-500">Daftar sesi ujian yang telah diselenggarakan di kelas Anda.</p>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-600">
+            <thead class="bg-gray-100 text-gray-700 text-xs uppercase font-bold">
+                <tr>
+                    <th class="px-6 py-4">Mata Kuliah / Kelas</th>
+                    <th class="px-6 py-4">Sesi Ujian</th>
+                    <th class="px-6 py-4">Tanggal Pelaksanaan</th>
+                    <th class="px-6 py-4">Partisipasi</th>
+                    <th class="px-6 py-4 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for kelas in kelas_diajar %}
+                    {% for sesi in kelas.sesi_ujian.all %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-bold text-gray-800">{{ kelas.mata_kuliah.nama_mk }} <span class="text-xs bg-gray-200 px-2 py-1 rounded ml-2">{{ kelas.nama_kelas }}</span></td>
+                        <td class="px-6 py-4 font-medium">{{ sesi.nama_ujian }}</td>
+                        <td class="px-6 py-4">{{ sesi.tanggal_ujian|date:"d M Y" }}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">{{ sesi.dokumen_terkumpul.count }} / {{ kelas.daftar_pelajar.count }} Mhs</span>
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{% url 'lihat_hasil_ujian' sesi.id %}" class="text-blue-500 hover:text-blue-700 font-bold px-3 py-1 bg-blue-50 rounded-lg transition"><i class="fa-solid fa-eye mr-1"></i></a>
+                            <a href="{% url 'ekspor_nilai_excel' sesi.id %}" class="text-green-600 hover:text-green-800 font-bold px-3 py-1 bg-green-50 rounded-lg transition"><i class="fa-solid fa-file-excel mr-1"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

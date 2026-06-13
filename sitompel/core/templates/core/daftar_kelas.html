@@ -1,0 +1,33 @@
+{% extends 'core/main.html' %}
+{% block title %}Daftar Kelas - SITOMPEL{% endblock %}
+{% block header_title %}Mata Kuliah & Kelas{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for kelas in kelas_diajar %}
+    <a href="{% url 'detail_kelas' kelas.id %}" class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-300 transition group block">
+        <div class="flex items-center justify-between mb-4">
+            <div class="bg-blue-50 text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <span class="bg-gray-100 text-gray-500 text-xs font-bold px-3 py-1 rounded-full group-hover:bg-blue-500 group-hover:text-white transition">Lihat Detail &rarr;</span>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800">{{ kelas.mata_kuliah.nama_mk }}</h3>
+        <p class="text-gray-500 font-mono mt-1 font-bold text-sm">Kelas {{ kelas.nama_kelas }}</p>
+        
+        <div class="mt-6 border-t border-gray-100 pt-4 flex justify-between items-center text-sm">
+            <div class="text-gray-500 font-medium">
+                <i class="fa-solid fa-users mr-1"></i> {{ kelas.daftar_pelajar.count }} Mahasiswa
+            </div>
+            <div class="text-gray-500 font-medium">
+                <i class="fa-solid fa-file-signature mr-1"></i> {{ kelas.sesi_ujian.count }} Sesi Ujian
+            </div>
+        </div>
+    </a>
+    {% empty %}
+    <div class="col-span-full bg-white rounded-3xl p-10 text-center border border-gray-100">
+        <p class="text-gray-500 font-medium">Belum ada kelas yang ditugaskan kepada Anda.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

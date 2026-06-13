@@ -1,17 +1,32 @@
-from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
 
-class SitompelLoginView(LoginView):
-    template_name = 'accounts/login.html'
-    redirect_authenticated_user = True
+def login_view(request):
+    if request.user.is_authenticated:
+        if getattr(request.user, 'role', '') == 'PENGAJAR':
+            return redirect('pengajar_dashboard') 
+        else:
+            return redirect('/admin/') 
 
-    def get_success_url(self):
-        # Cek role user yang login
-        user = self.request.user
-        if user.role == 'ADMIN':
-            return reverse_lazy('admin_dashboard') 
-        elif user.role == 'PENGAJAR':
-            return reverse_lazy('pengajar_dashboard') 
-        
-        # Fallback url
-        return reverse_lazy('home')
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            
+            if getattr(user, 'role', '') == 'PENGAJAR':
+                return redirect('pengajar_dashboard')
+            else:
+                return redirect('admin_dashboard')
+        else:
+            messages.error(request, "Username atau password salah.")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'accounts/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
