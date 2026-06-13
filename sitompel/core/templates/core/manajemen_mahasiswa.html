@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Mahasiswa - SITOMPEL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex">
+
+    <aside class="w-72 bg-[#111c2a] text-white flex flex-col shadow-2xl z-10 hidden md:flex">
+        <div class="p-8 flex items-center space-x-3 border-b border-gray-700/50">
+            <i class="fa-solid fa-layer-group text-green-400 text-2xl"></i>
+            <span class="text-xl font-bold tracking-wide">sitompel</span>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl transition">
+                <i class="fa-solid fa-chart-pie w-6"></i> Ringkasan
+            </a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider">Data Master</p>
+            <a href="{% url 'manajemen_mahasiswa' %}" class="flex items-center px-4 py-3 bg-gray-800/50 text-green-400 rounded-xl font-semibold">
+                <i class="fa-solid fa-users w-6"></i> Data Mahasiswa
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl transition">
+                <i class="fa-solid fa-chalkboard-user w-6"></i> Data Pengajar
+            </a>
+        </nav>
+        <div class="p-6 border-t border-gray-700/50">
+            <div class="text-sm font-semibold mb-1">{{ request.user.username }}</div>
+            <div class="text-xs text-gray-400 mb-4">Role: Tata Usaha</div>
+            <a href="{% url 'logout' %}" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2.5 rounded-lg text-sm font-bold transition flex items-center justify-center">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Keluar
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 md:p-12 overflow-y-auto">
+        
+        <header class="mb-10 flex items-center space-x-3">
+            <a href="{% url 'admin_dashboard' %}" class="md:hidden text-gray-600 hover:text-gray-900"><i class="fa-solid fa-arrow-left text-xl"></i></a>
+            <div>
+                <h1 class="text-3xl font-black text-gray-900">Manajemen Mahasiswa</h1>
+                <p class="text-gray-500 mt-1">Registrasi mahasiswa baru dan pantau data entitas terdaftar.</p>
+            </div>
+        </header>
+
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+                {%     for message in messages %}
+                    <div class="p-4 rounded-xl text-sm font-semibold {% if message.tags == 'success' %} bg-green-50 text-green-800 border-l-4 border-green-500 {% else %} bg-red-50 text-red-800 border-l-4 border-red-500 {% endif %}">
+                        {{ message }}
+                    </div>
+                {%     endfor %}
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm h-fit">
+                <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-user-plus text-green-500 mr-2"></i>Tambah Mahasiswa</h3>
+                
+                <form method="POST" action="" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nomor Induk Mahasiswa (NIM)</label>
+                        <input type="text" name="nim" required placeholder="Contoh: 12345678" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Lengkap Mahasiswa</label>
+                        <input type="text" name="nama_pelajar" required placeholder="Contoh: Alex Sitompel" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-semibold">
+                    </div>
+                    <button type="submit" class="w-full bg-[#111c2a] hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition text-sm shadow-md">
+                        Simpan ke Database
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-bold text-gray-800 text-lg">Daftar Mahasiswa Terdaftar</h3>
+                </div>
+
+                <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-400 text-xs font-bold uppercase tracking-wider sticky top-0">
+                                <th class="px-6 py-3 text-center w-16">No</th>
+                                <th class="px-6 py-3">NIM</th>
+                                <th class="px-6 py-3">Nama Lengkap</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                            {% for pelajar in daftar_mahasiswa %}
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <td class="px-6 py-3.5 text-center font-mono text-gray-400">{{ forloop.counter }}</td>
+                                    <td class="px-6 py-3.5 font-bold font-mono text-gray-900">{{ pelajar.nim }}</td>
+                                    <td class="px-6 py-3.5 font-semibold">{{ pelajar.nama_pelajar }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="px-6 py-8 text-center text-gray-400 italic">Belum ada mahasiswa yang didaftarkan.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,113 +1,65 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pengajar - SITOMPEL</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-300 font-sans flex h-screen overflow-hidden">
+{% extends 'core/main.html' %}
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-[#111c2a] text-white flex flex-col justify-between h-full">
-        <div>
-            <!-- Logo -->
-            <div class="p-6 flex items-center space-x-3">
-                <i class="fa-solid fa-layer-group text-green-400 text-2xl"></i>
-                <span class="text-xl font-bold tracking-wide">sitompel</span>
-            </div>
+{% block title %}Dashboard Pengajar - SITOMPEL{% endblock %}
+{% block header_title %}Good Morning !{% endblock %}
 
-            <!-- Navigation -->
-            <nav class="mt-4 flex flex-col space-y-2 px-4">
-                <a href="{% url 'pengajar_dashboard' %}" class="flex items-center space-x-3 bg-white text-black px-4 py-3 rounded-full font-semibold shadow-md">
-                    <i class="fa-solid fa-border-all"></i>
-                    <span>Dashboard</span>
-                    <span class="ml-auto w-2 h-2 bg-green-500 rounded-full"></span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 text-gray-400 hover:text-white px-4 py-3 rounded-full transition">
-                    <i class="fa-solid fa-file-import"></i>
-                    <span>Document Input</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 text-gray-400 hover:text-white px-4 py-3 rounded-full transition">
-                    <i class="fa-regular fa-clock"></i>
-                    <span>Exam Schedule</span>
-                    <span class="ml-auto w-2 h-2 bg-green-500 rounded-full"></span>
-                </a>
-                <!-- Logout Button -->
-                <form action="#" method="POST" class="mt-8">
-                    {% csrf_token %}
-                    <!-- Nantinya arahkan action ke url logout bawaan django -->
-                    <button type="submit" class="w-full flex items-center space-x-3 text-red-400 hover:text-red-300 px-4 py-3 rounded-full transition">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span>Logout</span>
-                    </button>
-                </form>
-            </nav>
+{% block content %}
+    
+    <div class="bg-[#E6F4EA] rounded-3xl p-8 shadow-sm border border-[#d5ebd9]">
+        <div class="flex items-center space-x-3 mb-6">
+            <i class="fa-solid fa-bell text-[#1A202C] text-xl"></i>
+            <h2 class="text-xl font-bold text-[#1A202C]">Enrolled Examination Assessment</h2>
         </div>
 
-        <!-- Reminder Widget -->
-        <div class="p-4 mb-6">
-            <h3 class="text-gray-300 text-lg mb-2">User<br><span class="font-bold text-white">Reminder</span></h3>
-            <div class="bg-[#dcf0d0] text-black p-4 rounded-2xl text-center shadow-lg">
-                <div class="text-4xl font-bold mb-1">n/a <span class="text-xl">Days</span></div>
-                <div class="text-xs text-gray-600 mb-4">to the nearest exam time</div>
-                <button class="bg-white text-sm font-semibold px-4 py-2 rounded-full w-full shadow hover:bg-gray-50 transition">More Detail</button>
-            </div>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {% for kelas in kelas_diajar %}
+                {% for sesi in kelas.sesi_ujian.all %}
+                    <div class="bg-[#1A202C] rounded-3xl p-6 text-white flex flex-col justify-between shadow-md relative overflow-hidden">
+                        
+                        <div class="flex items-start space-x-4 mb-6">
+                            <div class="bg-[#F3F4F6] text-[#1A202C] w-14 h-14 rounded-full flex items-center justify-center font-black text-sm border-4 border-[#2d3748]">
+                                LEC
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold leading-tight">{{ kelas.mata_kuliah.nama_mk }}</h3>
+                                <p class="text-xs text-gray-400 mt-1 font-mono">COMP{{ kelas.id|truncatechars:8 }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-8 text-xs text-gray-300">
+                            <div>
+                                <p class="font-bold text-white mb-2">Exam Date</p>
+                                <p class="flex items-center"><span class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span> {{ sesi.tanggal_ujian|date:"d M Y (H:i)" }}</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-white mb-2">Class Enrolled</p>
+                                <p class="flex items-center"><span class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span> {{ kelas.nama_kelas }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-end">
+                            <div class="bg-[#F3F4F6] text-[#1A202C] p-3 rounded-xl w-40">
+                                <p class="text-[10px] font-bold">Assessment Due Date</p>
+                                <p class="text-xs font-medium">{{ sesi.tanggal_ujian|date:"d M Y" }}</p>
+                                <p class="text-[9px] text-gray-500 mt-1">{{ sesi.dokumen_terkumpul.count }} dokumen terkumpul</p>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <a href="{% url 'capture_ujian' sesi.id %}" title="Pindai Dokumen" class="bg-white hover:bg-gray-100 text-[#1A202C] w-10 h-10 rounded-full flex items-center justify-center transition shadow-sm">
+                                    <i class="fa-solid fa-camera"></i>
+                                </a>
+                                
+                                <a href="{% url 'lihat_hasil_ujian' sesi.id %}" title="Lihat Rekap Nilai" class="bg-green-400 hover:bg-green-500 text-[#1A202C] w-10 h-10 rounded-full flex items-center justify-center transition shadow-sm">
+                                    <i class="fa-solid fa-chart-bar"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-gray-500 italic text-sm">Belum ada jadwal ujian untuk kelas ini.</p>
+                {% endfor %}
+            {% endfor %}
         </div>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 bg-gray-100 p-8 overflow-y-auto rounded-l-[2rem] shadow-[-10px_0_15px_rgba(0,0,0,0.1)] z-10 relative">
-        
-        <!-- Header -->
-        <header class="flex justify-between items-end mb-8">
-            <div>
-                <!-- Menyapa user dengan dinamis menggunakan request.user -->
-                <h1 class="text-4xl font-bold text-[#111c2a]">Good <span class="font-black">Morning, {{ request.user.first_name|default:request.user.username }}!</span></h1>
-                <p class="text-gray-500 mt-2">SITOMPEL Assessment Environment</p>
-            </div>
-            
-            <div class="bg-[#dcf0d0] rounded-full px-4 py-2 flex items-center space-x-3 cursor-pointer shadow-sm">
-                <i class="fa-solid fa-caret-down text-gray-600"></i>
-                <div class="text-right">
-                    <div class="font-bold text-sm text-[#111c2a]">{{ request.user.get_full_name|default:request.user.username }}</div>
-                    <div class="text-xs text-gray-600">{{ request.user.role }}</div>
-                </div>
-                <!-- Gunakan placeholder image atau integrasikan foto profil nanti -->
-                <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=111c2a&color=fff" alt="Profile" class="w-10 h-10 rounded-full border-2 border-white shadow">
-            </div>
-        </header>
-
-        <!-- Top Widgets Grid -->
-        <div class="grid grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-3xl shadow-sm">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-lg text-[#111c2a]"><i class="fa-regular fa-calendar mr-2"></i>Academic Calendar</h2>
-                </div>
-                <div class="text-center text-sm text-gray-500 py-8 italic">No schedule available yet.</div>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl shadow-sm">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-lg text-[#111c2a]"><i class="fa-solid fa-clipboard-list mr-2"></i>Assigned Courses</h2>
-                </div>
-                <div class="text-center text-sm text-gray-400 italic py-8">No assigned courses for this period.</div>
-            </div>
-        </div>
-
-        <!-- Enrolled Examination Section -->
-        <div class="bg-gradient-to-br from-[#dcf0d0] to-[#f4f9f1] p-6 rounded-3xl shadow-sm">
-            <h2 class="font-bold text-lg text-[#111c2a] mb-4"><i class="fa-solid fa-bell mr-2"></i>Upcoming Assessments</h2>
-            
-            <div class="grid grid-cols-2 gap-6">
-                <!-- Data ini nantinya akan di-looping menggunakan Django ORM -->
-                <div class="bg-[#111c2a] text-white p-6 rounded-3xl relative overflow-hidden flex items-center justify-center min-h-[150px]">
-                    <span class="text-gray-400 text-sm italic">Belum ada ujian yang perlu dinilai saat ini.</span>
-                </div>
-            </div>
-        </div>
-    </main>
-
-</body>
-</html>
+{% endblock %}

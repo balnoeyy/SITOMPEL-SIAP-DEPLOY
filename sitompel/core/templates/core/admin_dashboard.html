@@ -1,0 +1,120 @@
+{% extends 'core/main.html' %}
+
+{% block title %}Dashboard Admin - SITOMPEL{% endblock %}
+{% block header_title %}Administrative Overview{% endblock %}
+
+{% block content %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4">
+            <div class="bg-blue-50 text-blue-500 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Total Mahasiswa</p>
+                <h3 class="text-3xl font-black text-gray-800">{{ total_pelajar }}</h3>
+            </div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4">
+            <div class="bg-emerald-50 text-emerald-500 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Mata Kuliah</p>
+                <h3 class="text-3xl font-black text-gray-800">{{ total_mk }}</h3>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4">
+            <div class="bg-purple-50 text-purple-500 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-chalkboard"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Kelas Aktif</p>
+                <h3 class="text-3xl font-black text-gray-800">{{ total_kelas }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-[#1A202C]">Jadwal Ujian Terkini</h2>
+                <a href="/admin/core/sesiujian/" class="text-sm font-bold text-blue-500 hover:text-blue-700 transition">Kelola Ujian &rarr;</a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 text-gray-400 text-xs uppercase tracking-wider">
+                            <th class="px-8 py-4 font-bold">Nama Ujian</th>
+                            <th class="px-8 py-4 font-bold">Kelas</th>
+                            <th class="px-8 py-4 font-bold">Tanggal</th>
+                            <th class="px-8 py-4 font-bold text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 text-sm text-gray-700">
+                        {% for sesi in sesi_ujian_terbaru %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-8 py-5 font-bold text-gray-900">{{ sesi.nama_ujian }}</td>
+                                <td class="px-8 py-5">{{ sesi.kelas.mata_kuliah.kode_mk }} - {{ sesi.kelas.nama_kelas }}</td>
+                                <td class="px-8 py-5 whitespace-nowrap"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> {{ sesi.tanggal_ujian|date:"d M Y" }}</td>
+                                <td class="px-8 py-5 text-center">
+                                    <span class="bg-[#E6F4EA] text-green-800 font-bold px-3 py-1 rounded-full text-[10px] uppercase tracking-wide border border-green-200">
+                                        {{ sesi.dokumen_terkumpul.count }} Kertas
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-8 py-10 text-center text-gray-400 italic">Belum ada jadwal ujian yang terdaftar di sistem.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-[#1A202C] rounded-3xl border border-gray-800 shadow-md p-8 text-white h-fit">
+            <h3 class="text-lg font-bold mb-6">Akses Cepat (CRUD)</h3>
+            
+            <div class="space-y-3">
+                <a href="/admin/core/pelajar/add/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-user-plus text-green-400"></i>
+                        <span class="text-sm font-semibold">Tambah Mahasiswa</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
+                </a>
+                
+                <a href="/admin/accounts/akunuser/add/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-chalkboard-user text-blue-400"></i>
+                        <span class="text-sm font-semibold">Registrasi Pengajar</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
+                </a>
+
+                <a href="/admin/core/soal/add/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-file-circle-plus text-purple-400"></i>
+                        <span class="text-sm font-semibold">Input Soal & Rubrik</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
+                </a>
+                
+                <a href="/admin/accounts/akunuser/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group mt-4 border border-red-500/30">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-key text-red-400"></i>
+                        <span class="text-sm font-semibold">Reset Password Pengajar</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

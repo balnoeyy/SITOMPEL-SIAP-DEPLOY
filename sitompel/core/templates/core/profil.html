@@ -1,0 +1,44 @@
+{% extends 'core/main.html' %}
+{% block title %}Profil Pengguna - SITOMPEL{% endblock %}
+{% block header_title %}Profil Pengguna{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-4">
+    <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
+        <div class="h-32 bg-gradient-to-r from-blue-600 to-green-500"></div>
+        
+        <div class="px-8 pb-8 relative">
+            <div class="w-24 h-24 rounded-full bg-white border-4 border-white flex items-center justify-center font-black text-4xl text-[#1A202C] shadow-lg absolute -top-12 bg-gradient-to-tr from-gray-100 to-gray-300">
+                {{ request.user.username|make_list|first|upper }}
+            </div>
+            
+            <div class="mt-14 flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">{{ request.user.get_full_name|default:request.user.username }}</h2>
+                    <p class="text-gray-500 font-medium mt-1">{% if request.user.role == 'ADMIN' %}Administrator{% else %}Pengajar{% endif %}</p>
+                </div>
+                <span class="bg-green-100 text-green-700 font-bold px-4 py-2 rounded-full text-sm">Status: Aktif</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Email Terdaftar</p>
+                    <p class="text-gray-800 font-medium">{{ request.user.email|default:"Tidak tersedia" }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Nomor Induk Pegawai (NIP)</p>
+                    <p class="text-gray-800 font-mono font-medium">198{{ request.user.id|stringformat:"06d" }}2026</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Kode Identitas</p>
+                    <p class="text-gray-800 font-mono font-medium">{% if request.user.role == 'ADMIN' %}ADM{% else %}PGN{% endif %}-{{ request.user.id|stringformat:"04d" }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Bergabung Sejak</p>
+                    <p class="text-gray-800 font-medium">{{ request.user.date_joined|date:"d F Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

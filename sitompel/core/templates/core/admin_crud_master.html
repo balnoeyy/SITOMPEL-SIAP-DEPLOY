@@ -1,0 +1,65 @@
+{% extends 'core/main.html' %}
+
+{% block title %}Kelola Data - SITOMPEL{% endblock %}
+{% block header_title %}Manajemen Data Akademik{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-fit">
+        <h3 class="text-lg font-bold text-[#1A202C] mb-6 flex items-center">
+            <i class="fa-solid fa-plus-circle text-green-500 mr-2"></i> Tambah Data Baru
+        </h3>
+        
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kolom 1</label>
+                <input type="text" name="field_1" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-medium bg-gray-50">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kolom 2</label>
+                <input type="text" name="field_2" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-medium bg-gray-50">
+            </div>
+            
+            <button type="submit" class="w-full bg-[#111c2a] hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition shadow-md mt-4">
+                Simpan Data
+            </button>
+        </form>
+    </div>
+
+    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[70vh]">
+        <div class="px-6 py-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800 text-lg">Daftar Entitas Terdaftar</h3>
+            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">Total: {{ list_data.count|default:"0" }}</span>
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-4">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100">
+                        <th class="px-4 py-3">No</th>
+                        <th class="px-4 py-3">Atribut 1</th>
+                        <th class="px-4 py-3">Atribut 2</th>
+                        <th class="px-4 py-3 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-sm">
+                    {% for item in list_data %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-4 text-gray-400 font-mono">{{ forloop.counter }}</td>
+                            <td class="px-4 py-4 font-bold text-gray-900">{{ item.atribut_1 }}</td>
+                            <td class="px-4 py-4 text-gray-600">{{ item.atribut_2 }}</td>
+                            <td class="px-4 py-4 text-right">
+                                <button class="text-red-400 hover:text-red-600 transition p-2"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">Data kosong.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
