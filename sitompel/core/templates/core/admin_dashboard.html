@@ -5,7 +5,40 @@
 
 {% block content %}
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    {% if pending_reset_requests %}
+    <div class="bg-red-50 border border-red-100 rounded-3xl p-6 mb-8 shadow-sm">
+        <div class="flex items-start justify-between gap-4 mb-4">
+            <div>
+                <h2 class="text-lg font-bold text-red-800 flex items-center">
+                    <i class="fa-solid fa-bell text-red-500 mr-2"></i> Permintaan Reset Password
+                </h2>
+                <p class="text-sm text-red-600 mt-1">Pengajar berikut meminta password direset ke default <span class="font-bold">sitompel123</span>.</p>
+            </div>
+            <a href="{% url 'manajemen_pengajar' %}" class="text-sm font-bold text-red-700 hover:underline whitespace-nowrap">Kelola Akun</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {% for reset_request in pending_reset_requests %}
+            <div class="bg-white rounded-2xl p-4 border border-red-100 flex items-center justify-between gap-4">
+                <div>
+                    <p class="font-bold text-gray-900">{{ reset_request.user.username }}</p>
+                    <p class="text-xs text-gray-500">{{ reset_request.requested_at|date:"d M Y H:i" }}</p>
+                </div>
+                <form method="POST" action="{% url 'manajemen_pengajar' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reset_password_request">
+                    <input type="hidden" name="request_id" value="{{ reset_request.id }}">
+                    <button type="submit" class="bg-[#111c2a] hover:bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+                        Reset
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4">
             <div class="bg-blue-50 text-blue-500 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">
                 <i class="fa-solid fa-user-graduate"></i>
@@ -13,6 +46,16 @@
             <div>
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Total Mahasiswa</p>
                 <h3 class="text-3xl font-black text-gray-800">{{ total_pelajar }}</h3>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4">
+            <div class="bg-green-50 text-green-500 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Total Pengajar</p>
+                <h3 class="text-3xl font-black text-gray-800">{{ total_pengajar }}</h3>
             </div>
         </div>
         
@@ -40,40 +83,99 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-[#1A202C]">Jadwal Ujian Terkini</h2>
-                <a href="/admin/core/sesiujian/" class="text-sm font-bold text-blue-500 hover:text-blue-700 transition">Kelola Ujian &rarr;</a>
+            <div class="px-8 py-6 border-b border-gray-50 flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <h2 class="text-lg font-bold text-[#1A202C]">Kalender Ujian</h2>
+                    <p class="text-sm text-gray-500 mt-1">{{ calendar_month_name }} {{ calendar_year }}</p>
+                    <p class="text-xs font-bold text-gray-400 mt-1">
+                        <i class="fa-regular fa-clock mr-1"></i> Server Time: {{ server_time|date:"d M Y H:i:s" }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ prev_calendar_url }}" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                    <a href="{% url 'manajemen_sesi_ujian' %}" class="text-sm font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition">Kelola Ujian</a>
+                    <a href="{{ next_calendar_url }}" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50/50 text-gray-400 text-xs uppercase tracking-wider">
-                            <th class="px-8 py-4 font-bold">Nama Ujian</th>
-                            <th class="px-8 py-4 font-bold">Kelas</th>
-                            <th class="px-8 py-4 font-bold">Tanggal</th>
-                            <th class="px-8 py-4 font-bold text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50 text-sm text-gray-700">
-                        {% for sesi in sesi_ujian_terbaru %}
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-8 py-5 font-bold text-gray-900">{{ sesi.nama_ujian }}</td>
-                                <td class="px-8 py-5">{{ sesi.kelas.mata_kuliah.kode_mk }} - {{ sesi.kelas.nama_kelas }}</td>
-                                <td class="px-8 py-5 whitespace-nowrap"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> {{ sesi.tanggal_ujian|date:"d M Y" }}</td>
-                                <td class="px-8 py-5 text-center">
+            <div class="p-4 md:p-6 overflow-x-auto">
+                <div class="min-w-[680px]">
+                <div class="grid grid-cols-7 gap-2 text-center text-xs font-black uppercase tracking-wider text-gray-400 mb-2">
+                    <div>Sen</div>
+                    <div>Sel</div>
+                    <div>Rab</div>
+                    <div>Kam</div>
+                    <div>Jum</div>
+                    <div>Sab</div>
+                    <div>Min</div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-2">
+                    {% for week in calendar_weeks %}
+                        {% for cell in week %}
+                            {% if cell.day %}
+                            <button
+                                type="button"
+                                onclick="showExamDay('exam-day-{{ cell.day }}')"
+                                class="min-h-24 rounded-2xl border p-3 text-left transition {% if cell.exam_count %}bg-green-50 border-green-200 hover:bg-green-100{% else %}bg-gray-50 border-gray-100 hover:bg-gray-100{% endif %} {% if cell.is_today %}ring-2 ring-[#111c2a]{% endif %}"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <span class="font-black {% if cell.exam_count %}text-green-800{% else %}text-gray-500{% endif %}">{{ cell.day }}</span>
+                                    {% if cell.exam_count %}
+                                    <span class="bg-green-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{{ cell.exam_count }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if cell.exam_count %}
+                                <p class="text-[11px] text-green-700 font-bold mt-3">{{ cell.exam_count }} jadwal ujian</p>
+                                {% endif %}
+                            </button>
+                            {% else %}
+                            <div class="min-h-24 rounded-2xl bg-gray-50/40 border border-gray-50"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+
+                </div>
+
+                <div class="mt-6 bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden min-w-[680px]">
+                    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h3 class="font-bold text-gray-800">Detail Ujian</h3>
+                        <span class="text-xs text-gray-400 font-bold">Klik tanggal berwarna</span>
+                    </div>
+
+                    <div id="exam-empty" class="p-6 text-sm text-gray-500">
+                        Pilih tanggal pada kalender untuk melihat daftar ujian.
+                    </div>
+
+                    {% for week in calendar_weeks %}
+                        {% for cell in week %}
+                            {% if cell.exam_count %}
+                            <div id="exam-day-{{ cell.day }}" class="exam-detail hidden divide-y divide-gray-100">
+                                <div class="px-5 py-3 bg-white">
+                                    <p class="font-bold text-[#111c2a]">Tanggal {{ cell.day }} {{ calendar_month_name }} {{ calendar_year }}</p>
+                                </div>
+                                {% for sesi in cell.exams %}
+                                <div class="p-5 bg-white flex flex-wrap items-center justify-between gap-4">
+                                    <div>
+                                        <p class="font-bold text-gray-900">{{ sesi.nama_ujian }}</p>
+                                        <p class="text-sm text-gray-500 mt-1">{{ sesi.kelas.mata_kuliah.kode_mk }} - {{ sesi.kelas.mata_kuliah.nama_mk }} | Kelas {{ sesi.kelas.nama_kelas }}</p>
+                                        <p class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>{{ sesi.tanggal_ujian|date:"H:i" }}</p>
+                                    </div>
                                     <span class="bg-[#E6F4EA] text-green-800 font-bold px-3 py-1 rounded-full text-[10px] uppercase tracking-wide border border-green-200">
                                         {{ sesi.dokumen_terkumpul.count }} Kertas
                                     </span>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="4" class="px-8 py-10 text-center text-gray-400 italic">Belum ada jadwal ujian yang terdaftar di sistem.</td>
-                            </tr>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         {% endfor %}
-                    </tbody>
-                </table>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -81,7 +183,7 @@
             <h3 class="text-lg font-bold mb-6">Akses Cepat (CRUD)</h3>
             
             <div class="space-y-3">
-                <a href="/admin/core/pelajar/add/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
+                <a href="{% url 'manajemen_mahasiswa' %}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-user-plus text-green-400"></i>
                         <span class="text-sm font-semibold">Tambah Mahasiswa</span>
@@ -89,15 +191,15 @@
                     <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
                 </a>
                 
-                <a href="/admin/accounts/akunuser/add/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
+                <a href="{% url 'manajemen_pengajar' %}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-chalkboard-user text-blue-400"></i>
-                        <span class="text-sm font-semibold">Registrasi Pengajar</span>
+                        <span class="text-sm font-semibold">Tambah Akun</span>
                     </div>
                     <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
                 </a>
 
-                <a href="/admin/core/soal/add/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
+                <a href="{% url 'manajemen_sesi_ujian' %}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-file-circle-plus text-purple-400"></i>
                         <span class="text-sm font-semibold">Input Soal & Rubrik</span>
@@ -105,10 +207,10 @@
                     <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
                 </a>
                 
-                <a href="/admin/accounts/akunuser/" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group mt-4 border border-red-500/30">
+                <a href="{% url 'manajemen_pengajar' %}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition group mt-4 border border-red-500/30">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-key text-red-400"></i>
-                        <span class="text-sm font-semibold">Reset Password Pengajar</span>
+                        <span class="text-sm font-semibold">Kelola Role Akun</span>
                     </div>
                     <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white transition"></i>
                 </a>
@@ -116,5 +218,16 @@
         </div>
 
     </div>
+
+    <script>
+        function showExamDay(id) {
+            document.getElementById('exam-empty').classList.add('hidden');
+            document.querySelectorAll('.exam-detail').forEach((item) => item.classList.add('hidden'));
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+        }
+    </script>
 
 {% endblock %}

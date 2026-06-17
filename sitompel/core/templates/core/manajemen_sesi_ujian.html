@@ -1,0 +1,281 @@
+{% extends 'core/main.html' %}
+
+{% block title %}Sesi Ujian - SITOMPEL{% endblock %}
+{% block header_title %}Sesi Ujian{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  <form method="POST" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="create_sesi_setup">
+    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/70">
+      <h3 class="text-lg font-bold text-[#111c2a]">
+        <i class="fa-solid fa-file-signature text-green-600 mr-2"></i> Setup Sesi Ujian
+      </h3>
+      <p class="text-sm text-gray-500 mt-1">Pilih mata kuliah yang sudah terdaftar, buat kelas, assign pengajar/mahasiswa, lalu input soal ujian.</p>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <section class="space-y-4">
+        <h4 class="font-bold text-gray-800">Mata Kuliah & Kelas</h4>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mata Kuliah</label>
+          <select name="mata_kuliah_id" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-bold bg-gray-50">
+            <option value="">Pilih mata kuliah</option>
+            {% for mata_kuliah in daftar_mata_kuliah %}
+            <option value="{{ mata_kuliah.id }}">{{ mata_kuliah.kode_mk }} - {{ mata_kuliah.nama_mk }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kode Kelas</label>
+          <input type="text" name="nama_kelas" required placeholder="Contoh: LA83" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-bold bg-gray-50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Jumlah Mahasiswa</label>
+          <input type="number" id="jumlahMahasiswa" name="jumlah_mahasiswa" min="1" required placeholder="Sesuai mahasiswa yang dipilih" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-bold bg-gray-50">
+          <p class="text-xs text-gray-400 mt-1"><span id="selectedCount">0</span> mahasiswa dipilih.</p>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h4 class="font-bold text-gray-800">Sesi Ujian</h4>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Ujian</label>
+          <input type="text" name="nama_ujian" required placeholder="Contoh: UTS Genap 2026" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-bold bg-gray-50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tanggal dan Jam Ujian</label>
+          <input type="datetime-local" name="tanggal_ujian" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-bold bg-gray-50">
+        </div>
+
+        <h4 class="font-bold text-gray-800 pt-2">Pengajar Pemeriksa</h4>
+        <div class="border border-gray-200 rounded-xl bg-gray-50 max-h-48 overflow-y-auto p-3 space-y-2">
+          {% for pengajar in daftar_pengajar %}
+          <label class="flex items-center justify-between bg-white rounded-lg px-3 py-2 text-sm">
+            <span class="font-bold text-gray-800">{{ pengajar.username }}</span>
+            <input type="checkbox" name="pengajar_ids" value="{{ pengajar.id }}" class="w-4 h-4 accent-green-600">
+          </label>
+          {% empty %}
+          <p class="text-sm text-gray-400 italic p-2">Belum ada pengajar aktif.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h4 class="font-bold text-gray-800">Mahasiswa Kelas</h4>
+        <div class="border border-gray-200 rounded-xl bg-gray-50 max-h-[390px] overflow-y-auto p-3 space-y-2">
+          {% for mahasiswa in daftar_mahasiswa %}
+          <label class="flex items-center justify-between bg-white rounded-lg px-3 py-2 text-sm">
+            <span><span class="font-bold text-gray-800">{{ mahasiswa.nim }}</span> <span class="text-gray-500">{{ mahasiswa.nama_pelajar }}</span></span>
+            <input type="checkbox" name="pelajar_ids" value="{{ mahasiswa.id }}" class="mahasiswa-check w-4 h-4 accent-green-600">
+          </label>
+          {% empty %}
+          <p class="text-sm text-gray-400 italic p-2">Belum ada mahasiswa.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <div class="px-6 pb-6">
+      <div class="border border-gray-200 rounded-2xl overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-gray-800">Soal Ujian</h4>
+            <p class="text-xs text-gray-500 mt-1">Soal dan rubrik ini dipakai untuk OCR per nomor dan scoring.</p>
+          </div>
+          <button type="button" onclick="tambahSoal()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-bold px-4 py-2 rounded-xl transition">
+            <i class="fa-solid fa-plus mr-2"></i>Tambah Soal
+          </button>
+        </div>
+        <div id="soalContainer" class="p-5 space-y-4">
+          <div class="soal-item grid grid-cols-1 xl:grid-cols-[1fr_1fr_140px_44px] gap-3">
+            <textarea name="soal_pertanyaan[]" required rows="3" placeholder="Tulis pertanyaan soal nomor 1..." class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm bg-white"></textarea>
+            <textarea name="soal_rubrik[]" rows="3" placeholder="Tulis kunci jawaban/rubrik untuk scoring..." class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm bg-white"></textarea>
+            <input type="number" step="0.01" min="0" name="soal_bobot[]" required placeholder="Bobot" class="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-bold bg-white h-fit">
+            <button type="button" onclick="hapusSoal(this)" title="Hapus soal" class="bg-red-50 hover:bg-red-100 text-red-600 rounded-xl h-12 transition">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end mt-6">
+        <button type="submit" class="bg-[#111c2a] hover:bg-gray-800 text-white font-bold px-6 py-3 rounded-xl transition shadow-sm">
+          <i class="fa-solid fa-floppy-disk mr-2"></i>Simpan Sesi Ujian
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-gray-800 text-lg">
+          <i class="fa-solid fa-calendar-check text-green-600 mr-2"></i> Sesi Ujian Terdaftar
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">Kelola kelas, pengajar, mahasiswa, sesi ujian, soal, dan rubrik.</p>
+      </div>
+    </div>
+
+    <div class="divide-y divide-gray-100">
+      {% for mata_kuliah in daftar_mata_kuliah %}
+        {% for kelas in mata_kuliah.daftar_kelas.all %}
+        <div class="p-6">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ mata_kuliah.kode_mk }} - {{ mata_kuliah.nama_mk }}</p>
+              <h4 class="text-xl font-black text-[#111c2a] mt-1">Kelas {{ kelas.nama_kelas }}</h4>
+              <p class="text-sm text-gray-500 mt-1">{{ kelas.daftar_pelajar.count }} mahasiswa | {{ kelas.sesi_ujian.count }} sesi</p>
+            </div>
+            <button type="button" onclick="openModal('kelola-kelas-{{ kelas.id }}')" class="bg-green-50 hover:bg-green-100 text-green-700 font-bold px-4 py-2 rounded-xl transition text-sm">
+              <i class="fa-solid fa-pen-to-square mr-2"></i>Kelola
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {% for sesi in kelas.sesi_ujian.all %}
+            <div class="border border-gray-100 rounded-xl p-4 bg-gray-50">
+              <p class="font-bold text-gray-800">{{ sesi.nama_ujian }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ sesi.tanggal_ujian|date:"d M Y H:i" }}</p>
+              <p class="text-xs text-gray-400 mt-2">{{ sesi.daftar_soal.count }} soal</p>
+            </div>
+            {% empty %}
+            <p class="text-sm text-gray-400 italic">Belum ada sesi ujian.</p>
+            {% endfor %}
+          </div>
+
+          <div id="kelola-kelas-{{ kelas.id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+              <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h3 class="font-bold text-[#111c2a]">Kelola {{ mata_kuliah.kode_mk }} - Kelas {{ kelas.nama_kelas }}</h3>
+                <button type="button" onclick="closeModal('kelola-kelas-{{ kelas.id }}')" class="w-9 h-9 rounded-lg hover:bg-gray-200 transition">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <div class="p-6 space-y-6 overflow-y-auto">
+                <form method="POST" class="p-4 bg-white border border-gray-100 rounded-2xl space-y-4">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="update_kelas">
+                  <input type="hidden" name="kelas_id" value="{{ kelas.id }}">
+                  <div class="grid grid-cols-1 lg:grid-cols-[160px_1fr_1fr] gap-4">
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kode Kelas</label>
+                      <input type="text" name="nama_kelas" value="{{ kelas.nama_kelas }}" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pengajar</label>
+                      <div class="border border-gray-200 rounded-xl bg-gray-50 max-h-44 overflow-y-auto p-3 space-y-2">
+                        {% for pengajar in daftar_pengajar %}
+                        <label class="flex items-center justify-between bg-white rounded-lg px-3 py-2 text-sm">
+                          <span class="font-bold text-gray-800">{{ pengajar.username }}</span>
+                          <input type="checkbox" name="pengajar_ids" value="{{ pengajar.id }}" class="w-4 h-4 accent-green-600" {% if pengajar in kelas.pengajar.all %}checked{% endif %}>
+                        </label>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Mahasiswa</label>
+                      <div class="border border-gray-200 rounded-xl bg-gray-50 max-h-44 overflow-y-auto p-3 space-y-2">
+                        {% for mahasiswa in daftar_mahasiswa %}
+                        <label class="flex items-center justify-between bg-white rounded-lg px-3 py-2 text-sm">
+                          <span><span class="font-bold text-gray-800">{{ mahasiswa.nim }}</span> <span class="text-gray-500">{{ mahasiswa.nama_pelajar }}</span></span>
+                          <input type="checkbox" name="pelajar_ids" value="{{ mahasiswa.id }}" class="w-4 h-4 accent-green-600" {% if mahasiswa in kelas.daftar_pelajar.all %}checked{% endif %}>
+                        </label>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold transition">Simpan Kelas & Assign</button>
+                  </div>
+                </form>
+
+                {% for sesi in kelas.sesi_ujian.all %}
+                <form method="POST" class="bg-white border border-gray-100 rounded-xl p-4 space-y-4">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="update_sesi">
+                  <input type="hidden" name="sesi_id" value="{{ sesi.id }}">
+                  <div class="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Ujian</label>
+                      <input type="text" name="nama_ujian" value="{{ sesi.nama_ujian }}" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tanggal Ujian</label>
+                      <input type="datetime-local" name="tanggal_ujian" value="{{ sesi.tanggal_ujian|date:'Y-m-d\\TH:i' }}" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                  </div>
+                  <div class="space-y-3">
+                    {% for soal in sesi.daftar_soal.all %}
+                    <div class="grid grid-cols-1 xl:grid-cols-[1fr_1fr_120px] gap-3">
+                      <textarea name="soal_pertanyaan_{{ soal.id }}" rows="3" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">{{ soal.pertanyaan }}</textarea>
+                      <textarea name="soal_rubrik_{{ soal.id }}" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400">{% for parameter in soal.parameter_jawaban.all %}{{ parameter.deskripsi_jawaban }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+                      <input type="number" step="0.01" min="0" name="soal_bobot_{{ soal.id }}" value="{{ soal.bobot_maksimal }}" required class="px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 h-fit">
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <div class="flex flex-wrap justify-between gap-2">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#111c2a] hover:bg-gray-800 text-white font-bold transition">Simpan Sesi</button>
+                    <button type="submit" name="action" value="delete_sesi" onclick="return confirm('Hapus sesi ujian ini beserta soal dan hasil scan terkait?')" class="px-5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold transition">Hapus Sesi</button>
+                  </div>
+                </form>
+                {% empty %}
+                <p class="text-sm text-gray-400 italic">Belum ada sesi ujian untuk kelas ini.</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% empty %}
+      <div class="p-10 text-center text-gray-400 italic">Belum ada mata kuliah. Tambahkan dulu dari halaman Kelola Mata Kuliah.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateSelectedCount() {
+    const count = document.querySelectorAll('.mahasiswa-check:checked').length;
+    const target = document.getElementById('selectedCount');
+    if (target) target.textContent = count;
+  }
+
+  document.querySelectorAll('.mahasiswa-check').forEach((checkbox) => {
+    checkbox.addEventListener('change', updateSelectedCount);
+  });
+
+  function tambahSoal() {
+    const container = document.getElementById('soalContainer');
+    const nomor = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'soal-item grid grid-cols-1 xl:grid-cols-[1fr_1fr_140px_44px] gap-3';
+    div.innerHTML = `
+      <textarea name="soal_pertanyaan[]" required rows="3" placeholder="Tulis pertanyaan soal nomor ${nomor}..." class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm bg-white"></textarea>
+      <textarea name="soal_rubrik[]" rows="3" placeholder="Tulis kunci jawaban/rubrik untuk scoring..." class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm bg-white"></textarea>
+      <input type="number" step="0.01" min="0" name="soal_bobot[]" required placeholder="Bobot" class="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-bold bg-white h-fit">
+      <button type="button" onclick="hapusSoal(this)" title="Hapus soal" class="bg-red-50 hover:bg-red-100 text-red-600 rounded-xl h-12 transition"><i class="fa-solid fa-trash"></i></button>
+    `;
+    container.appendChild(div);
+  }
+
+  function hapusSoal(button) {
+    const container = document.getElementById('soalContainer');
+    if (container.children.length <= 1) return;
+    button.closest('.soal-item').remove();
+  }
+
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

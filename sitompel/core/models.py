@@ -103,3 +103,50 @@ class JawabanUjian(models.Model):
 
     def __str__(self):
         return f"Jawaban No {self.soal.nomor_soal} - {self.dokumen.pelajar.nim}"
+
+class PasswordResetRequest(models.Model):
+    STATUS_CHOICES = (
+        ('PENDING', 'Menunggu'),
+        ('RESOLVED', 'Selesai'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='password_reset_requests')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    requested_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='resolved_password_reset_requests'
+    )
+
+    class Meta:
+        ordering = ['-requested_at']
+
+    def __str__(self):
+        return f"Reset password {self.user.username} - {self.status}"
+
+
+class ActivityLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='activity_logs'
+    )
+    action = models.CharField(max_length=80)
+    target = models.CharField(max_length=180, blank=True)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        username = self.user.username if self.user else 'Sistem'
+        return f"{self.created_at:%Y-%m-%d %H:%M} - {username} - {self.action}"

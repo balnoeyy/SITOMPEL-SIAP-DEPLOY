@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MataKuliah, Kelas, Pelajar, SesiUjian, Soal, ParameterRubrik, DokumenUjian, JawabanUjian
+from .models import MataKuliah, Kelas, Pelajar, SesiUjian, Soal, ParameterRubrik, DokumenUjian, JawabanUjian, PasswordResetRequest
 
 
 # Mendaftarkan model agar bisa dikelola langsung oleh Superuser/Admin
@@ -12,3 +12,4 @@ admin.site.register(Soal)
 admin.site.register(ParameterRubrik)
 admin.site.register(DokumenUjian)
 admin.site.register(JawabanUjian)
+admin.site.register(PasswordResetRequest)

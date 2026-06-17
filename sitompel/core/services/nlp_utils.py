@@ -1,6 +1,7 @@
-import logging, json, re
+import logging, json, os, re
 from sentence_transformers import SentenceTransformer, util
 from google import genai
+from django.conf import settings
 
 # Set up logging untuk memantau load model di terminal
 logger = logging.getLogger(__name__)
@@ -20,8 +21,11 @@ def hitung_skor_semantik(jawaban_mahasiswa, daftar_parameter_rubrik):
     dengan variasi kunci jawaban yang dibuat oleh dosen.
     Mengambil nilai kecocokan tertinggi.
     """
-    if not model or not jawaban_mahasiswa or not daftar_parameter_rubrik:
+    if not jawaban_mahasiswa or not daftar_parameter_rubrik:
         return 0.0
+
+    if not model:
+        return _hitung_skor_lexical(jawaban_mahasiswa, daftar_parameter_rubrik)
         
     # Encode jawaban mahasiswa menjadi vektor numerik
     embedding_mahasiswa = model.encode(jawaban_mahasiswa, convert_to_tensor=True)
@@ -42,7 +46,22 @@ def hitung_skor_semantik(jawaban_mahasiswa, daftar_parameter_rubrik):
     skor_bersih = max(0.0, min(1.0, skor_tertinggi))
     return skor_bersih
 
-client = genai.Client(api_key="API_KEY_GENAI")
+
+def _hitung_skor_lexical(jawaban_mahasiswa, daftar_parameter_rubrik):
+    kata_jawaban = set(re.findall(r'\w+', jawaban_mahasiswa.lower()))
+    if not kata_jawaban:
+        return 0.0
+
+    skor_tertinggi = 0.0
+    for parameter in daftar_parameter_rubrik:
+        kata_rubrik = set(re.findall(r'\w+', parameter.deskripsi_jawaban.lower()))
+        if not kata_rubrik:
+            continue
+        overlap = len(kata_jawaban & kata_rubrik)
+        skor = overlap / len(kata_rubrik)
+        skor_tertinggi = max(skor_tertinggi, skor)
+
+    return max(0.0, min(1.0, skor_tertinggi))
 
 def validasi_logika(pertanyaan, teks_jawaban, parameter_rubrik, skor_sbert_mentah):
     """
@@ -50,6 +69,10 @@ def validasi_logika(pertanyaan, teks_jawaban, parameter_rubrik, skor_sbert_menta
     Menggunakan SDK google.genai terbaru.
     """
     acuan_rubrik = "\n".join([f"- {p.deskripsi_jawaban}" for p in parameter_rubrik])
+    api_key = os.environ.get('GOOGLE_GENAI_API_KEY') or getattr(settings, 'GOOGLE_GENAI_API_KEY', '')
+
+    if not api_key:
+        return skor_sbert_mentah, "Nilai dihitung dari kemiripan SBERT. Google GenAI API key belum dikonfigurasi untuk validasi RAG."
     
     prompt = f"""
     Kamu adalah asisten Pengajar penilai ujian tulis berbasis esai.
@@ -73,6 +96,7 @@ def validasi_logika(pertanyaan, teks_jawaban, parameter_rubrik, skor_sbert_menta
     """
     
     try:
+        client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SITOMPEL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="min-h-screen bg-[#f3f4f6] text-[#111c2a] font-sans">
+    <section class="min-h-screen flex flex-col relative overflow-hidden">
+      <div class="absolute inset-0">
+        <img
+          src="/media/landing/sitompel-hero.png"
+          alt=""
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-r from-[#f3f4f6] via-[#f3f4f6]/92 to-[#f3f4f6]/35"></div>
+      </div>
+
+      <header class="relative z-10 px-6 md:px-10 py-5 flex items-center justify-between">
+        <a href="{% url 'home' %}" class="flex items-center space-x-3">
+          <span class="w-10 h-10 bg-[#111c2a] text-[#dcf0d0] rounded-xl flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-layer-group"></i>
+          </span>
+          <span class="text-2xl font-black tracking-widest">sitompel.</span>
+        </a>
+
+        <a
+          href="{% url 'login' %}"
+          class="bg-[#111c2a] hover:bg-gray-800 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-sm"
+        >
+          Login
+        </a>
+      </header>
+
+      <main class="relative z-10 flex-1 flex items-center px-6 md:px-10 py-10">
+        <div class="max-w-2xl">
+          <p class="inline-flex items-center text-xs font-black uppercase tracking-[0.2em] text-green-700 bg-green-100 border border-green-200 px-4 py-2 rounded-full mb-6">
+            OCR • AI Assessment • Academic Workflow
+          </p>
+          <h1 class="text-4xl sm:text-5xl md:text-7xl font-black leading-[0.95] text-[#111c2a]">
+            SITOMPEL
+          </h1>
+          <p class="mt-6 text-base md:text-xl text-gray-700 leading-relaxed max-w-xl">
+            Sistem penilaian lembar ujian berbasis OCR dan AI untuk membantu pengajar memindai, meninjau, dan merekap jawaban mahasiswa dengan alur yang lebih rapi.
+          </p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a
+              href="{% url 'login' %}"
+              class="inline-flex items-center justify-center bg-[#111c2a] hover:bg-gray-800 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-gray-400/30"
+            >
+              <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i> Login ke Sistem
+            </a>
+          </div>
+        </div>
+      </main>
+
+      <div class="relative z-10 px-6 md:px-10 pb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl">
+          <div class="bg-white/88 backdrop-blur border border-white rounded-xl p-4 shadow-sm">
+            <i class="fa-solid fa-camera text-green-600 mb-3"></i>
+            <p class="font-bold text-sm">Pindai Lembar</p>
+            <p class="text-xs text-gray-500 mt-1">Ambil gambar jawaban mahasiswa langsung dari workflow ujian.</p>
+          </div>
+          <div class="bg-white/88 backdrop-blur border border-white rounded-xl p-4 shadow-sm">
+            <i class="fa-solid fa-magnifying-glass-chart text-blue-600 mb-3"></i>
+            <p class="font-bold text-sm">Review OCR</p>
+            <p class="text-xs text-gray-500 mt-1">Validasi hasil ekstraksi teks sebelum dinilai otomatis.</p>
+          </div>
+          <div class="bg-white/88 backdrop-blur border border-white rounded-xl p-4 shadow-sm">
+            <i class="fa-solid fa-file-excel text-emerald-600 mb-3"></i>
+            <p class="font-bold text-sm">Rekap Nilai</p>
+            <p class="text-xs text-gray-500 mt-1">Pantau hasil penilaian dan ekspor rekap ke Excel.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

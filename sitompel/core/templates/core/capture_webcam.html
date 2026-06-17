@@ -7,9 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 font-sans h-screen flex overflow-hidden">
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col lg:flex-row overflow-y-auto">
 
-    <aside class="w-80 bg-[#111c2a] text-white p-8 flex flex-col h-full shadow-2xl z-20">
+    <aside class="w-full lg:w-80 bg-[#111c2a] text-white p-6 lg:p-8 flex flex-col lg:min-h-screen lg:max-h-screen lg:overflow-y-auto shadow-2xl z-20">
         <div class="mb-8 flex items-center space-x-3">
             <i class="fa-solid fa-layer-group text-green-400 text-2xl"></i>
             <span class="text-xl font-bold tracking-wide">sitompel</span>
@@ -21,7 +21,7 @@
         <form id="scanForm" method="POST" action="{% url 'api_upload_capture' sesi.id %}" class="flex-1 flex flex-col">
             {% csrf_token %}
             
-            <div class="flex-1">
+            <div class="lg:flex-1">
                 <label class="block text-sm font-semibold text-gray-300 mb-2">1. Pilih Mahasiswa</label>
                 <select id="pelajarSelect" name="pelajar_id" required class="w-full bg-white text-black px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 mb-6">
                     <option value="" disabled selected>-- Pilih Mahasiswa --</option>
@@ -34,20 +34,39 @@
                     <i class="fa-solid fa-circle-info mr-2"></i>
                     Arahkan kertas jawaban ke webcam laptop. Pastikan teks terbaca jelas di layar kanan.
                 </div>
+                <div class="bg-white/10 border border-white/10 text-gray-300 p-4 rounded-xl text-xs mb-6">
+                    OCR memakai Google Vision. Jika hasil kosong, pastikan autentikasi Google Vision sudah tersedia lewat service account, API key, atau ADC gcloud.
+                </div>
+                <div class="bg-green-500/10 border border-green-400/20 text-green-100 p-4 rounded-xl text-sm mb-6">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">Jepretan terkumpul</span>
+                        <span id="pageCount" class="bg-green-400 text-[#111c2a] font-black px-3 py-1 rounded-full text-xs">0</span>
+                    </div>
+                    <p id="pageHint" class="text-xs text-green-100/80 mt-2">Jepret semua halaman jawaban mahasiswa ini, lalu proses OCR semua.</p>
+                </div>
             </div>
 
-            <input type="hidden" name="image_base64" id="hidden_image_data" required>
+            <input type="hidden" name="image_base64" id="hidden_image_data">
+            <input type="hidden" name="image_base64_pages" id="hidden_image_pages">
 
-            <button type="button" id="captureBtn" class="w-full bg-green-500 hover:bg-green-600 text-[#111c2a] font-bold text-lg py-4 rounded-xl transition shadow-lg flex items-center justify-center disabled:opacity-50" disabled>
-                <i class="fa-solid fa-camera mr-2"></i> Tangkap Gambar
-            </button>
+            <div class="space-y-3 sticky bottom-0 bg-[#111c2a] pt-3 pb-1">
+                <button type="button" id="captureBtn" class="w-full bg-green-500 hover:bg-green-600 text-[#111c2a] font-bold text-lg py-4 rounded-xl transition shadow-lg flex items-center justify-center disabled:opacity-50" disabled>
+                    <i class="fa-solid fa-camera mr-2"></i> Tambah Jepretan
+                </button>
+                <button type="button" id="undoBtn" class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition flex items-center justify-center disabled:opacity-40" disabled>
+                    <i class="fa-solid fa-rotate-left mr-2"></i> Batalkan Jepretan Terakhir
+                </button>
+                <button type="submit" id="processBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center disabled:opacity-40" disabled>
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Proses OCR Semua
+                </button>
+            </div>
         </form>
     </aside>
 
-    <main class="flex-1 bg-gray-900 relative flex items-center justify-center p-8">
-        <video id="webcam" autoplay playsinline class="w-full h-full object-cover rounded-3xl shadow-inner border-4 border-gray-800"></video>
+    <main class="flex-1 min-h-[55vh] lg:min-h-screen bg-gray-900 relative flex items-center justify-center p-4 lg:p-8 overflow-y-auto">
+        <video id="webcam" autoplay playsinline class="w-full h-full object-cover rounded-2xl lg:rounded-3xl shadow-inner border-4 border-gray-800"></video>
         
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-12">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-6 lg:p-12">
             <div class="w-[210mm] h-[297mm] max-h-full max-w-full border-4 border-dashed border-green-400/70 rounded-lg relative">
                 <div class="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-green-400"></div>
                 <div class="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-green-400"></div>
@@ -63,12 +82,32 @@
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('canvas');
         const captureBtn = document.getElementById('captureBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const processBtn = document.getElementById('processBtn');
         const pelajarSelect = document.getElementById('pelajarSelect');
         const form = document.getElementById('scanForm');
         const hiddenImageData = document.getElementById('hidden_image_data');
+        const hiddenImagePages = document.getElementById('hidden_image_pages');
+        const pageCount = document.getElementById('pageCount');
+        const pageHint = document.getElementById('pageHint');
+        const capturedPages = [];
+
+        function syncCaptureState() {
+            const hasPelajar = Boolean(pelajarSelect.value);
+            captureBtn.disabled = !hasPelajar;
+            undoBtn.disabled = capturedPages.length === 0;
+            processBtn.disabled = !hasPelajar || capturedPages.length === 0;
+            pageCount.textContent = capturedPages.length;
+            hiddenImagePages.value = JSON.stringify(capturedPages);
+            hiddenImageData.value = capturedPages[0] || '';
+            pageHint.textContent = capturedPages.length
+                ? `${capturedPages.length} halaman siap diproses untuk mahasiswa yang dipilih.`
+                : 'Jepret semua halaman jawaban mahasiswa ini, lalu proses OCR semua.';
+        }
 
         pelajarSelect.addEventListener('change', () => {
-            captureBtn.disabled = !pelajarSelect.value;
+            capturedPages.length = 0;
+            syncCaptureState();
         });
 
         navigator.mediaDevices.getUserMedia({ 
@@ -86,19 +125,34 @@
             });
 
         captureBtn.addEventListener('click', () => {
-            captureBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengekstrak...';
-            captureBtn.disabled = true;
-
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const imageData = canvas.toDataURL('image/jpeg', 0.9);
-            hiddenImageData.value = imageData;
-
-            form.submit();
+            capturedPages.push(imageData);
+            syncCaptureState();
         });
+
+        undoBtn.addEventListener('click', () => {
+            capturedPages.pop();
+            syncCaptureState();
+        });
+
+        form.addEventListener('submit', (event) => {
+            if (!pelajarSelect.value || capturedPages.length === 0) {
+                event.preventDefault();
+                alert('Pilih mahasiswa dan ambil minimal satu jepretan dulu.');
+                return;
+            }
+            processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses OCR...';
+            processBtn.disabled = true;
+            captureBtn.disabled = true;
+            undoBtn.disabled = true;
+        });
+
+        syncCaptureState();
     </script>
 </body>
 </html>

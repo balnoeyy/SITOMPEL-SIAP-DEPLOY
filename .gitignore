@@ -1,3 +1,46 @@
-venv
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 
-sitompel/kredensial-gcp.json
+# Virtual environments
+.venv/
+.venv-1/
+.venv311/
+venv/
+env/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+kredensial-gcp.json
+*kredensial*.json
+*.pem
+*.key
+
+# Django
+*.sqlite3
+db.sqlite3
+staticfiles/
+sitompel/staticfiles/
+
+# User uploaded/generated media
+sitompel/media/lembar_ujian_raw/
+sitompel/media/rubrik_materi/
+sitompel/rubrik_materi/
+
+# Keep curated landing assets, ignore other generated media by default
+!sitompel/media/
+!sitompel/media/landing/
+!sitompel/media/landing/sitompel-hero.png
+
+# Logs and local output
+*.log
+logs/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

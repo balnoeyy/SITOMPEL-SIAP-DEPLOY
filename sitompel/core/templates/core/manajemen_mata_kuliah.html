@@ -1,0 +1,130 @@
+{% extends 'core/main.html' %}
+
+{% block title %}Kelola Mata Kuliah - SITOMPEL{% endblock %}
+{% block header_title %}Kelola Mata Kuliah{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-fit">
+    <h3 class="text-lg font-bold text-[#111c2a] mb-1">
+      <i class="fa-solid fa-book-medical text-green-600 mr-2"></i> Tambah Mata Kuliah
+    </h3>
+    <p class="text-sm text-gray-500 mb-6">Daftarkan mata kuliah sebagai master data akademik.</p>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_mata_kuliah">
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kode Mata Kuliah</label>
+        <input type="text" name="kode_mk" required placeholder="Contoh: COMP6048" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-bold bg-gray-50">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Mata Kuliah</label>
+        <input type="text" name="nama_mk" required placeholder="Contoh: Natural Language Processing" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm bg-gray-50">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">SKS</label>
+        <input type="number" name="sks" min="1" required placeholder="4" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-sm font-bold bg-gray-50">
+      </div>
+      <button type="submit" class="w-full bg-[#111c2a] hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition shadow-sm">
+        Simpan Mata Kuliah
+      </button>
+    </form>
+  </div>
+
+  <div class="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-gray-800 text-lg">
+          <i class="fa-solid fa-list-check text-green-600 mr-2"></i> Mata Kuliah Terdaftar
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">Kelola kode, nama, dan SKS mata kuliah.</p>
+      </div>
+      <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Total: {{ daftar_mata_kuliah.count }}</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-gray-700">
+        <thead class="bg-gray-100 text-gray-500 text-xs uppercase font-bold">
+          <tr>
+            <th class="px-6 py-4">Kode</th>
+            <th class="px-6 py-4">Nama Mata Kuliah</th>
+            <th class="px-6 py-4">SKS</th>
+            <th class="px-6 py-4 text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for mata_kuliah in daftar_mata_kuliah %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 font-black text-gray-900">{{ mata_kuliah.kode_mk }}</td>
+            <td class="px-6 py-4 font-semibold">{{ mata_kuliah.nama_mk }}</td>
+            <td class="px-6 py-4">{{ mata_kuliah.sks }}</td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex justify-end gap-2">
+                <button type="button" onclick="openModal('edit-mk-{{ mata_kuliah.id }}')" class="px-3 py-2 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 transition">Edit</button>
+                <form method="POST">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_mata_kuliah">
+                  <input type="hidden" name="mata_kuliah_id" value="{{ mata_kuliah.id }}">
+                  <button type="submit" onclick="return confirm('Hapus mata kuliah ini beserta kelas, sesi, soal, dan scan terkait?')" class="px-3 py-2 rounded-lg text-xs font-bold bg-red-50 hover:bg-red-100 text-red-600 transition">Hapus</button>
+                </form>
+              </div>
+
+              <div id="edit-mk-{{ mata_kuliah.id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4 text-left">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
+                  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                    <h3 class="font-bold text-[#111c2a]">Edit Mata Kuliah</h3>
+                    <button type="button" onclick="closeModal('edit-mk-{{ mata_kuliah.id }}')" class="w-9 h-9 rounded-lg hover:bg-gray-200 transition">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                  <form method="POST" class="p-6 space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_mata_kuliah">
+                    <input type="hidden" name="mata_kuliah_id" value="{{ mata_kuliah.id }}">
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kode Mata Kuliah</label>
+                      <input type="text" name="kode_mk" value="{{ mata_kuliah.kode_mk }}" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Mata Kuliah</label>
+                      <input type="text" name="nama_mk" value="{{ mata_kuliah.nama_mk }}" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">SKS</label>
+                      <input type="number" name="sks" value="{{ mata_kuliah.sks }}" min="1" required class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                      <button type="button" onclick="closeModal('edit-mk-{{ mata_kuliah.id }}')" class="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition">Batal</button>
+                      <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#111c2a] hover:bg-gray-800 text-white font-bold transition">Simpan</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Belum ada mata kuliah terdaftar.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

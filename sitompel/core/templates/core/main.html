@@ -1,106 +1,213 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}SITOMPEL{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        /* Custom scrollbar untuk estetika */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      /* Custom scrollbar untuk estetika */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
     </style>
-</head>
-<body class="bg-[#F3F4F6] font-sans min-h-screen flex text-gray-800">
+  </head>
+  <body class="bg-[#F3F4F6] font-sans min-h-screen flex flex-col md:flex-row text-gray-800">
+    <aside
+      class="w-64 bg-[#111c2a] text-white flex flex-col shadow-2xl z-20 hidden md:flex transition-all duration-300"
+    >
+      <div class="p-6 flex items-center space-x-3 mb-4">
+        <i class="fa-solid fa-layer-group text-[#dcf0d0] text-3xl"></i>
+        <span class="text-2xl font-black tracking-widest text-white"
+          >sitompel.</span
+        >
+      </div>
 
-    <aside class="w-64 bg-[#111c2a] text-white flex flex-col shadow-2xl z-20 hidden md:flex transition-all duration-300">
-        <div class="p-6 flex items-center space-x-3 mb-4">
-            <i class="fa-solid fa-layer-group text-[#dcf0d0] text-3xl"></i>
-            <span class="text-2xl font-black tracking-widest text-white">sitompel.</span>
-        </div>
-        
-        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-            {% if request.user.role == 'PENGAJAR' %}
-                <p class="px-4 pt-4 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Main Menu</p>
-                <a href="{% url 'pengajar_dashboard' %}" class="flex items-center px-4 py-3 bg-[#dcf0d0] text-[#111c2a] rounded-xl font-bold transition shadow-sm">
-                    <i class="fa-solid fa-border-all w-6"></i> Dashboard
-                </a>
-                <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                    <i class="fa-solid fa-clock-rotate-left w-6"></i> Riwayat Penilaian
-                </a>
-                
-            {% elif request.user.role == 'ADMIN' %}
-                <p class="px-4 pt-4 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Overview</p>
-                <a href="{% url 'admin_dashboard' %}" class="flex items-center px-4 py-3 bg-[#dcf0d0] text-[#111c2a] rounded-xl font-bold transition shadow-sm">
-                    <i class="fa-solid fa-chart-pie w-6"></i> Dashboard Admin
-                </a>
-                
-                <p class="px-4 pt-6 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Data Akademik</p>
-                <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                    <i class="fa-solid fa-book w-6"></i> Kelola Mata Kuliah
-                </a>
-                <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                    <i class="fa-solid fa-file-signature w-6"></i> Sesi & Ujian
-                </a>
+      <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+        {% if request.user.role == 'PENGAJAR' %}
+        <p
+          class="px-4 pt-4 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest"
+        >
+          Main Menu
+        </p>
+        <a
+          href="{% url 'pengajar_dashboard' %}"
+          class="flex items-center px-4 py-3 bg-[#dcf0d0] text-[#111c2a] rounded-xl font-bold transition shadow-sm"
+        >
+          <i class="fa-solid fa-border-all w-6"></i> Dashboard
+        </a>
+        <a
+          href="{% url 'daftar_kelas' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-chalkboard-user w-6"></i> Kelas Saya
+        </a>
+        <a
+          href="{% url 'arsip_kelas' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-clock-rotate-left w-6"></i> Riwayat Penilaian
+        </a>
 
-                <p class="px-4 pt-6 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Manajemen Entitas</p>
-                <a href="{% url 'manajemen_mahasiswa' %}" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                    <i class="fa-solid fa-user-graduate w-6"></i> Data Pelajar
-                </a>
-                <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                    <i class="fa-solid fa-chalkboard-user w-6"></i> Data Pengajar
-                </a>
-                <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                    <i class="fa-solid fa-clipboard-list w-6"></i> Log Aktivitas
-                </a>
-            {% endif %}
-        </nav>
+        {% elif request.user.role == 'ADMIN' %}
+        <p
+          class="px-4 pt-4 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest"
+        >
+          Overview
+        </p>
+        <a
+          href="{% url 'admin_dashboard' %}"
+          class="flex items-center px-4 py-3 bg-[#dcf0d0] text-[#111c2a] rounded-xl font-bold transition shadow-sm"
+        >
+          <i class="fa-solid fa-chart-pie w-6"></i> Dashboard Admin
+        </a>
 
-        <div class="p-6 border-t border-white/10">
-            <a href="{% url 'logout' %}" class="flex items-center justify-center text-sm font-bold text-red-400 hover:bg-red-400/10 py-3 rounded-xl transition w-full">
-                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Keluar Sistem
-            </a>
-        </div>
+        <p
+          class="px-4 pt-6 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest"
+        >
+          Data Akademik
+        </p>
+        <a
+          href="{% url 'manajemen_mata_kuliah' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-book w-6"></i> Kelola Mata Kuliah
+        </a>
+        <a
+          href="{% url 'manajemen_sesi_ujian' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-file-signature w-6"></i> Sesi Ujian
+        </a>
+
+        <p
+          class="px-4 pt-6 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest"
+        >
+          Manajemen Entitas
+        </p>
+        <a
+          href="{% url 'manajemen_mahasiswa' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-user-graduate w-6"></i> Data Pelajar
+        </a>
+        <a
+          href="{% url 'manajemen_pengajar' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-users-gear w-6"></i> Manajemen Akun
+        </a>
+        <a
+          href="{% url 'log_aktivitas' %}"
+          class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition"
+        >
+          <i class="fa-solid fa-clipboard-list w-6"></i> Log Aktivitas
+        </a>
+        {% endif %}
+      </nav>
+
+      <div class="p-6 border-t border-white/10">
+        <a
+          href="{% url 'logout' %}"
+          class="flex items-center justify-center text-sm font-bold text-red-400 hover:bg-red-400/10 py-3 rounded-xl transition w-full"
+        >
+          <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Keluar
+          Sistem
+        </a>
+      </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
-        
-        <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 px-8 py-4 flex justify-between items-center z-10 sticky top-0">
-            <div>
-                <h2 class="text-xl font-black text-gray-800">{% block header_title %}Dashboard{% endblock %}</h2>
-                <p class="text-xs text-gray-400 font-medium">{% now "l, d F Y" %}</p>
-            </div>
-            
-            <div class="flex items-center space-x-4">
-                <div class="text-right hidden md:block">
-                    <p class="text-sm font-bold text-[#111c2a]">{{ request.user.get_full_name|default:request.user.username }}</p>
-                    <p class="text-xs text-green-600 font-mono font-semibold">{{ request.user.role }} | {{ request.user.nip_pengajar|default:"-" }}</p>
-                </div>
-                <div class="w-10 h-10 bg-[#dcf0d0] rounded-full flex items-center justify-center text-[#111c2a] font-black border-2 border-white shadow-sm">
-                    {{ request.user.username|make_list|first|upper }}
-                </div>
-            </div>
-        </header>
-
-        <div class="flex-1 p-8 overflow-y-auto">
-            {% if messages %}
-                <div class="mb-6 space-y-2">
-                    {% for message in messages %}
-                        <div class="p-4 rounded-xl text-sm font-semibold shadow-sm flex items-center {% if message.tags == 'success' %} bg-green-50 text-green-800 border-l-4 border-green-500 {% else %} bg-red-50 text-red-800 border-l-4 border-red-500 {% endif %}">
-                            <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-triangle-exclamation{% endif %} mr-3 text-lg"></i>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            {% block content %}
-            {% endblock %}
+    <main class="flex-1 flex flex-col min-h-screen md:h-screen overflow-hidden relative">
+      <header
+        class="bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-8 py-4 flex justify-between items-center z-10 sticky top-0"
+      >
+        <div>
+          <h2 class="text-lg md:text-xl font-black text-gray-800">
+            {% block header_title %}Dashboard{% endblock %}
+          </h2>
+          <p class="text-xs text-gray-400 font-medium">{% now "l, d F Y" %}</p>
         </div>
-    </main>
 
-</body>
+        <div class="flex items-center space-x-4">
+          <div class="text-right hidden md:block">
+            <p class="text-sm font-bold text-[#111c2a]">
+              {{ request.user.get_full_name|default:request.user.username }}
+            </p>
+            <p class="text-xs text-green-600 font-mono font-semibold">
+              {{ request.user.role }} | {{ request.user.email|default:request.user.username }}
+            </p>
+          </div>
+          <div
+            class="w-10 h-10 bg-[#dcf0d0] rounded-full flex items-center justify-center text-[#111c2a] font-black border-2 border-white shadow-sm"
+          >
+            {{ request.user.username|make_list|first|upper }}
+          </div>
+        </div>
+      </header>
+
+      <nav class="md:hidden bg-[#111c2a] text-white px-4 py-3 overflow-x-auto whitespace-nowrap flex gap-2">
+        {% if request.user.role == 'PENGAJAR' %}
+        <a href="{% url 'pengajar_dashboard' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-border-all mr-2"></i>Dashboard
+        </a>
+        <a href="{% url 'daftar_kelas' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-chalkboard-user mr-2"></i>Kelas
+        </a>
+        <a href="{% url 'arsip_kelas' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-clock-rotate-left mr-2"></i>Riwayat
+        </a>
+        {% elif request.user.role == 'ADMIN' %}
+        <a href="{% url 'admin_dashboard' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-chart-pie mr-2"></i>Dashboard
+        </a>
+        <a href="{% url 'manajemen_mata_kuliah' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-book mr-2"></i>Mata Kuliah
+        </a>
+        <a href="{% url 'manajemen_sesi_ujian' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-file-signature mr-2"></i>Sesi Ujian
+        </a>
+        <a href="{% url 'manajemen_mahasiswa' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-user-graduate mr-2"></i>Pelajar
+        </a>
+        <a href="{% url 'manajemen_pengajar' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 text-xs font-bold">
+          <i class="fa-solid fa-users-gear mr-2"></i>Akun
+        </a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="inline-flex items-center px-3 py-2 rounded-lg bg-red-500/20 text-red-200 text-xs font-bold">
+          <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>Keluar
+        </a>
+      </nav>
+
+      <div class="flex-1 p-4 md:p-8 overflow-y-auto">
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+          {% for message in messages %}
+          <div
+            class="p-4 rounded-xl text-sm font-semibold shadow-sm flex items-center {% if message.tags == 'success' %} bg-green-50 text-green-800 border-l-4 border-green-500 {% else %} bg-red-50 text-red-800 border-l-4 border-red-500 {% endif %}"
+          >
+            <i
+              class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-triangle-exclamation{% endif %} mr-3 text-lg"
+            ></i>
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %} {% block content %} {% endblock %}
+      </div>
+    </main>
+  </body>
 </html>

@@ -1,0 +1,47 @@
+{% extends 'core/main.html' %}
+
+{% block title %}{{ judul }} - SITOMPEL{% endblock %}
+{% block header_title %}{{ judul }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+    <div>
+      <h3 class="font-bold text-gray-800 text-lg flex items-center">
+        <i class="fa-solid {{ ikon }} text-green-600 mr-2"></i> {{ judul }}
+      </h3>
+      <p class="text-sm text-gray-500 mt-1">{{ deskripsi }}</p>
+    </div>
+    <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+      Total: {{ list_data|length }}
+    </span>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[680px] text-left text-sm text-gray-700">
+      <thead class="bg-gray-100 text-gray-500 text-xs uppercase font-bold">
+        <tr>
+          <th class="px-6 py-4 w-16 text-center">No</th>
+          {% for item in header %}
+          <th class="px-6 py-4">{{ item }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for item in list_data %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 text-center font-mono text-gray-400">{{ forloop.counter }}</td>
+          <td class="px-6 py-4 font-bold text-gray-900">{{ item.kolom_1 }}</td>
+          <td class="px-6 py-4">{{ item.kolom_2 }}</td>
+          <td class="px-6 py-4">{{ item.kolom_3 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Data belum tersedia.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
