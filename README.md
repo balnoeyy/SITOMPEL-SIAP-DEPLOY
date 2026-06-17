@@ -1,4 +1,4 @@
-# SITOMPEL
+# SITOMPEL-SIAP-DEPLOY
 
 SITOMPEL adalah aplikasi Django untuk manajemen mata kuliah, sesi ujian, OCR lembar jawaban, scoring otomatis, dan rekapitulasi nilai.
 
